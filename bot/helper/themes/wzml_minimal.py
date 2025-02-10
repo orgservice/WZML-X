@@ -2,10 +2,10 @@
 class WZMLStyle:
     # ----------------------
     # async def start(client, message) ---> __main__.py
-    ST_BN1_NAME = 'Repo'
-    ST_BN1_URL = 'https://www.github.com/weebzone/WZML-X'
-    ST_BN2_NAME = 'Updates'
-    ST_BN2_URL = 'https://t.me/WZML_X'
+    ST_BN1_NAME = 'Updates'
+    ST_BN1_URL = 'https://t.me/imaxprime'
+    ST_BN2_NAME = 'Adult Service'
+    ST_BN2_URL = 'https://t.me/AdultService'
     ST_MSG = '''<i>This bot can mirror all your links|files|torrents to Google Drive or any rclone cloud or to telegram or to ddl servers.</i>
 <b>Type {help_command} to get a list of available commands</b>'''
     ST_BOTPM = '''<i>Now, This bot will send all your files and links here. Start Using ...</i>'''
@@ -136,7 +136,7 @@ class WZMLStyle:
     L_LOG_START =           "➲ <b><u>Leech Started :</u></b>\n┃\n┠ <b>User :</b> {mention} ( #ID{uid} )\n┖ <b>Source :</b> <a href='{msg_link}'>Click Here</a>"
 
     # async def onUploadComplete(): ---> tasks_listener.py
-    NAME =                  '<b><i>{Name}</i></b>\n┃\n'
+    NAME =                  '<code>{Name}</code>\n┃\n'
     SIZE =                  '┠ <b>Size: </b>{Size}\n'
     ELAPSE =                '┠ <b>Elapsed: </b>{Time}\n'
     MODE =                  '┠ <b>Mode: </b>{Mode}\n'
@@ -157,13 +157,13 @@ class WZMLStyle:
     M_CC =                  '┖ <b>By: </b>{Tag}\n\n'
     M_BOT_MSG =             '➲ <b><i>Link(s) have been Sent to Bot PM (Private)</i></b>'
     # ----- BUTTONS -------
-    CLOUD_LINK =      '☁️ Cloud Link'
+    CLOUD_LINK =      '☁️ Drive Link'
     SAVE_MSG =        '📨 Save Message'
     RCLONE_LINK =     '♻️ RClone Link'
     DDL_LINK =        '📎 {Serv} Link'
     SOURCE_URL =      '🔐 Source Link'
-    INDEX_LINK_F =    '🗂 Index Link'
-    INDEX_LINK_D =    '⚡ Index Link'
+    INDEX_LINK_F =    '🗂 Direct Link'
+    INDEX_LINK_D =    '⚡ Direct Link'
     VIEW_LINK =       '🌐 View Link'
     CHECK_PM =        '📥 View in Bot PM'
     CHECK_LL =        '🖇 View in Links Log'
@@ -173,7 +173,7 @@ class WZMLStyle:
 
     # def get_readable_message(): ---> bot_utilis.py
     ####--------OVERALL MSG HEADER----------
-    STATUS_NAME =       '<b><i>{Name}</i></b>'
+    STATUS_NAME =       '<code>{Name}<</code>'
 
     #####---------PROGRESSIVE STATUS-------
     BAR =               '\n┃ {Bar}'
