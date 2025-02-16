@@ -1,3 +1,4 @@
+pyrofork==2.3.45
 aiohttp[speedups]
 aiofiles
 aioshutil
@@ -30,7 +31,6 @@ psutil
 pybase64
 pycountry
 pymongo
-pyrofork==2.2.11
 python-dotenv
 python-magic
 qbittorrent-api
