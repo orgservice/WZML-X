@@ -446,7 +446,7 @@ async def load_config():
 
     AUTHOR_URL = environ.get('AUTHOR_URL', '')
     if len(AUTHOR_URL) == 0:
-        AUTHOR_URL = 'https://t.me/AdultService'
+        AUTHOR_URL = 'https://t.me/AdultXPrime'
 
     TITLE_NAME = environ.get('TITLE_NAME', '')
     if len(TITLE_NAME) == 0:
