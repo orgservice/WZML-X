@@ -3,7 +3,7 @@ import platform
 from base64 import b64encode
 from datetime import datetime
 from os import path as ospath
-from pkg_resources import get_distribution, DistributionNotFound
+from importlib.metadata import version, PackageNotFoundError
 from aiofiles import open as aiopen
 from aiofiles.os import remove as aioremove, path as aiopath, mkdir
 from re import match as re_match
@@ -215,23 +215,23 @@ def get_all_versions():
     except FileNotFoundError:
         vr = ""
     try:
-        vpy = get_distribution("pyrogram").version
-    except DistributionNotFound:
+        vpy = version("pyrogram")
+    except PackageNotFoundError:
         try:
-            vpy = get_distribution("pyrofork").version
-        except DistributionNotFound:
+            vpy = version("pyrofork")
+        except PackageNotFoundError:
             vpy = "2.xx.xx"
     bot_cache["eng_versions"] = {
         "p7zip": vp,
         "ffmpeg": vf,
         "rclone": vr,
         "aria": aria2.client.get_version()["version"],
-        "aiohttp": get_distribution("aiohttp").version,
-        "gapi": get_distribution("google-api-python-client").version,
+        "aiohttp": version("aiohttp"),
+        "gapi": version("google-api-python-client"),
         "mega": MegaApi("test").getVersion(),
         "qbit": get_client().app.version,
         "pyro": vpy,
-        "ytdlp": get_distribution("yt-dlp").version,
+        "ytdlp": version("yt-dlp"),
     }
 
 
