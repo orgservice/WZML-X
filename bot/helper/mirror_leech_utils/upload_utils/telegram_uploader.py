@@ -34,12 +34,15 @@ from ...ext_utils.bot_utils import sync_to_async
 from ...ext_utils.files_utils import get_base_name, is_archive
 from ...ext_utils.status_utils import get_readable_file_size, get_readable_time
 
-from ...ext_utils.media_utils import get_md5_hash, get_media_info
+from ...ext_utils.media_utils import get_document_type, get_md5_hash, get_media_info
 from ...telegram_helper.message_utils import delete_message
 from ...telegram_helper.tg_copy import call_with_flood_retry as _call_with_flood_retry
 from ...ext_utils.hyperul_utils import HypertgUpload
 
 LOGGER = getLogger(__name__)
+
+# Matches parts of a split file: name.001 / name.part001.ext
+SPLIT_PART_REGEX = r".+(?=\.0*\d+$)|.+(?=\.part\d+\..+$)"
 
 
 class TelegramUploader:
@@ -52,6 +55,8 @@ class TelegramUploader:
         self._thumb = self._listener.thumb or f"thumbnails/{listener.user_id}.jpg"
         self._msgs_dict = {}
         self._corrupted = 0
+        self._skipped_files = []
+        self._min_upload_size = max(Config.MIN_LEECH_UPLOAD_SIZE, 0) * 1024 * 1024
         self._is_corrupted = False
         self._media_dict = {"videos": {}, "documents": {}}
         self._last_msg_in_group = False
@@ -455,6 +460,27 @@ class TelegramUploader:
             if not self._listener.is_cancelled and await aiopath.exists(path_to_clean):
                 await remove(path_to_clean)
 
+    async def _skip_small_file(self, file_, f_path, f_size):
+        # Only videos and documents are filtered. Photos, audio and parts of
+        # split files are always uploaded.
+        if (
+            not self._min_upload_size
+            or not f_size
+            or f_size >= self._min_upload_size
+            or re_match(SPLIT_PART_REGEX, file_)
+        ):
+            return False
+        is_video, is_audio, is_image = await get_document_type(f_path)
+        if is_image or (is_audio and not is_video):
+            return False
+        LOGGER.info(
+            f"Skipping {f_path}: size {get_readable_file_size(f_size)} is less than "
+            f"MIN_LEECH_UPLOAD_SIZE ({get_readable_file_size(self._min_upload_size)})"
+        )
+        self._skipped_files.append((file_, f_size))
+        self._listener.size = max(self._listener.size - f_size, 0)
+        return True
+
     async def upload(self):
         await self._user_settings()
         res = await self._msg_to_reply()
@@ -477,6 +503,8 @@ class TelegramUploader:
                     continue
                 try:
                     f_size = await aiopath.getsize(f_path)
+                    if await self._skip_small_file(file_, f_path, f_size):
+                        continue
                     self._total_files += 1
                     if f_size == 0:
                         LOGGER.warning(f"{f_path} size is zero, skipping")
@@ -490,7 +518,7 @@ class TelegramUploader:
                         group_lists = [
                             x for v in self._media_dict.values() for x in v.keys()
                         ]
-                        match = re_match(r".+(?=\.0*\d+$)|.+(?=\.part\d+\..+$)", f_path)
+                        match = re_match(SPLIT_PART_REGEX, f_path)
                         if not match or match and match.group(0) not in group_lists:
                             for key, value in list(self._media_dict.items()):
                                 for subkey, msgs in list(value.items()):
@@ -546,19 +574,23 @@ class TelegramUploader:
             }
         if self._listener.is_cancelled:
             return
-        if self._total_files == 0:
+        if self._total_files == 0 and not self._skipped_files:
             await self._listener.on_upload_error(
                 "No files to upload. In case you have filled EXCLUDED_EXTENSIONS, then check if all files have those extensions or not."
             )
             return
-        if self._total_files <= self._corrupted:
+        if self._total_files and self._total_files <= self._corrupted:
             await self._listener.on_upload_error(
                 f"Files Corrupted or unable to upload. {self._error or 'Check logs!'}"
             )
             return
         LOGGER.info(f"Leech Completed: {self._listener.name}")
         await self._listener.on_upload_complete(
-            None, self._msgs_dict, self._total_files, self._corrupted
+            None,
+            self._msgs_dict,
+            self._total_files,
+            self._corrupted,
+            skipped=self._skipped_files,
         )
         return
 
