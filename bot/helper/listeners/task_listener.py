@@ -424,7 +424,14 @@ class TaskListener(TaskConfig):
         return
 
     async def on_upload_complete(
-        self, link, files, folders, mime_type, rclone_path="", dir_id=""
+        self,
+        link,
+        files,
+        folders,
+        mime_type,
+        rclone_path="",
+        dir_id="",
+        skipped=None,
     ):
         if (
             self.is_super_chat
@@ -513,6 +520,8 @@ class TaskListener(TaskConfig):
             msg += f"\n┠ <b>Total Files: </b>{folders}"
             if mime_type != 0:
                 msg += f"\n┠ <b>Corrupted Files</b> → {mime_type}"
+            if skipped:
+                msg += f"\n┠ <b>Total Skipped: </b>{len(skipped)}"
             msg += f"\n┖ <b>Task By</b> → {self.tag}\n\n"
 
             if self.bot_pm:
@@ -522,7 +531,9 @@ class TaskListener(TaskConfig):
                 if self.is_super_chat:
                     await send_message(self.message, pmsg)
 
-            if not files and not self.is_super_chat:
+            if not files and (
+                not self.is_super_chat or (skipped and not self.bot_pm)
+            ):
                 await send_message(self.message, msg)
             else:
                 log_chat = self.user_id if self.bot_pm else self.message
