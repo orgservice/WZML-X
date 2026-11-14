@@ -110,6 +110,7 @@ class Config:
     LEECH_SUFFIX = ""
     LEECH_FONT = ""
     LEECH_SPLIT_SIZE = 2097152000
+    MIN_LEECH_UPLOAD_SIZE = 0
     MEDIA_GROUP = False
     USE_HYPER = True
     HYPER_THREADS = 0
@@ -269,6 +270,11 @@ class Config:
         original_value = getattr(cls, key, None)
         if original_value is None:
             return value
+        elif key == "MIN_LEECH_UPLOAD_SIZE":
+            try:
+                return max(int(value), 0)
+            except (ValueError, TypeError):
+                return original_value
         elif isinstance(original_value, bool):
             if isinstance(value, bool):
                 return value
