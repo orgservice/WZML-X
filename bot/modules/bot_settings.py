@@ -237,6 +237,7 @@ DEFAULT_DESP = {
     "LEECH_SUFFIX": "Suffix added to leeched file names.",
     "LEECH_FONT": "Font style for captions: b, i, u, s, code, spoiler.",
     "LEECH_SPLIT_SIZE": "Split size for Telegram uploads in bytes. Default: 2GB (4GB for premium).",
+    "MIN_LEECH_UPLOAD_SIZE": "Minimum size in MB for a video or document to be uploaded to Telegram. Smaller videos/documents are skipped and listed in the task summary; photos, audio and parts of split files are never skipped. Default: 0 (disabled).",
     "MEDIA_GROUP": "Upload split parts as media group. Default: False.",
     "USE_HYPER": "Enable HyperDL/HyperUP for faster Telegram transfers. Default: True.",
     "HYPER_THREADS": "Number of parallel download parts (clients). 0 = auto.",
@@ -785,6 +786,8 @@ async def edit_variable(_, message, pre_message, key):
         value = int(value)
     elif key == "LEECH_SPLIT_SIZE":
         value = min(int(value), TgClient.MAX_SPLIT_SIZE)
+    elif key == "MIN_LEECH_UPLOAD_SIZE":
+        value = max(int(value), 0)
     elif key == "EXCLUDED_EXTENSIONS":
         fx = value.split()
         excluded_extensions.clear()
