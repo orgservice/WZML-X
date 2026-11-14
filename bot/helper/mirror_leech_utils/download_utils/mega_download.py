@@ -299,7 +299,7 @@ async def add_mega_download(listener, path):
             download_path = os.path.join(path, listener.name)
             await makedirs(download_path, exist_ok=True)
 
-        for attempt in range(5):
+        for attempt in range(2):
             cancel_token = _make_cancel_token()
             dl_listener._cancel_token = cancel_token
             dl_listener.error = None
@@ -350,6 +350,14 @@ async def add_mega_download(listener, path):
                     dl_listener.downloaded_bytes,
                 )
 
+                if is_folder and local_size > 0:
+                    LOGGER.warning(
+                        "MegaDownload: folder incomplete, uploading downloaded files and skipping the rest"
+                    )
+                    dl_listener.retryable_error = None
+                    await listener.on_download_complete()
+                    return
+
                 if expected_size > 0:
                     missing = expected_size - local_size
                     tolerance = max(2 * 1024 * 1024, int(expected_size * 0.001))
@@ -366,9 +374,9 @@ async def add_mega_download(listener, path):
                         await listener.on_download_complete()
                         return
 
-            if attempt >= 4:
+            if attempt >= 1:
                 LOGGER.error(
-                    "MegaDownload: transfer incomplete after 5 attempts: %s",
+                    "MegaDownload: transfer incomplete after 2 attempts: %s",
                     dl_listener.retryable_error,
                 )
                 await listener.on_download_error(
@@ -377,7 +385,7 @@ async def add_mega_download(listener, path):
                 return
 
             LOGGER.warning(
-                "MegaDownload: transfer incomplete, retrying attempt %s/5: %s",
+                "MegaDownload: transfer incomplete, retrying attempt %s/2: %s",
                 attempt + 2,
                 dl_listener.retryable_error,
             )
